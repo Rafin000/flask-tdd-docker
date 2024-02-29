@@ -5,8 +5,10 @@ from src import create_app, db  # updated
 from src.api.models import User
 
 
+
 @pytest.fixture(scope='module')
 def test_app():
+
     os.environ['APP_SETTINGS']= 'src.config.TestingConfig' 
     app = create_app()  # new
     # app.config.from_object('src.config.TestingConfig')

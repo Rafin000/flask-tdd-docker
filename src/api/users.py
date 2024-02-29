@@ -1,3 +1,4 @@
+
 from flask import Blueprint, request
 from flask_restx import Resource, Api
 
@@ -5,11 +6,9 @@ from src import db
 from src.api.models import User
 from flask_restx import Resource, Api, fields
 
+
 users_blueprint = Blueprint('users', __name__)
 api = Api(users_blueprint)
-
-
-
 
 user = api.model('User', {
     'id': fields.Integer(readOnly=True),
@@ -17,7 +16,6 @@ user = api.model('User', {
     'email': fields.String(required=True),
     'created_date': fields.DateTime,
 })
-
 
 class UsersList(Resource):
     @api.expect(user, validate=True)
