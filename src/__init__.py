@@ -2,12 +2,14 @@
 import os
 
 from flask import Flask  # new
+from flask_admin import Admin 
 from flask_sqlalchemy import SQLAlchemy
 
 
 # instantiate the db
 db = SQLAlchemy()
 
+admin = Admin(template_mode="bootstrap3")
 
 # new
 def create_app(script_info=None):
