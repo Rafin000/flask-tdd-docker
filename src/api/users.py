@@ -1,14 +1,17 @@
 
-from flask import Blueprint, request , jsonify
-from flask_restx import Resource, Api, fields
+from flask import Blueprint, request
 from src import db
 from src.api.models import User
+from flask_restx import Resource, Api, fields
 
 
 users_blueprint = Blueprint('users', __name__)
 api = Api(users_blueprint)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/rafin_dev
 user = api.model('User', {
     'id': fields.Integer(readOnly=True),
     'username': fields.String(required=True),
@@ -17,60 +20,44 @@ user = api.model('User', {
 })
 
 class UsersList(Resource):
-    @api.marshal_with(user)
-    def get(self, user_id=None):
-        if user_id is not None:
-            user = User.query.filter_by(id=user_id).first()
-            # return {
-            #     'username': user.username,
-            #     'email': user.email,
-            #     'active': user.active
-            # }, 200
-
-            """
-            if we use Marshalling then the User Model Object get auto transformed
-            for dict. and then JSON
-            """
-            if not user:
-                api.abort(404, f"User {user_id} does not exist")
-            return user, 200
-
-        else:
-            users = User.query.all()
-            user_list = []
-            for user in users:
-                user_dict = {
-                    'username': user.username,
-                    'email': user.email,
-                    'active': user.active
-                }
-                user_list.append(user_dict)
-            return user_list, 200
-        
-
     @api.expect(user, validate=True)
     def post(self):
-        data = request.json
-        username = data.get('username')
-        email = data.get('email')
-        
-        # if len(data)==0:
-        #     return {'message': 'Input payload validation failed'}, 400
-        
-        # if 'email' not in data or 'username' not in data:
-        #     return {'message': 'Input payload validation failed'}, 400
-        
-        if User.query.filter_by(email=email).first():
-             return {'message' : 'Sorry. That email already exists.'}, 400
+        post_data = request.get_json()
+        username = post_data.get('username')
+        email = post_data.get('email')
+        response_object = {}
 
-        
-        new_user = User(username=username, email=email)
-        db.session.add(new_user)
+        user = User.query.filter_by(email=email).first()
+        if user:
+            response_object['message'] = 'Sorry. That email already exists.'
+            return response_object, 400
+
+        db.session.add(User(username=username, email=email))
         db.session.commit()
-        
-        return {
-            'message' : f'{email} was added!'
-        }, 201
+
+        response_object['message'] = f'{email} was added!'
+        return response_object, 201
     
+
+    @api.marshal_with(user, as_list=True)
+    def get(self):
+        return User.query.all(), 200
+
+
+class Users(Resource):
+
+    @api.marshal_with(user)
+    def get(self, user_id):
+        return User.query.filter_by(id=user_id).first(), 200
     
-api.add_resource(UsersList, '/users', '/users/<int:user_id>', endpoint='get_user')
+
+    @api.marshal_with(user)
+    def get(self, user_id):
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            api.abort(404, f"User {user_id} does not exist")
+        return user, 200
+    
+
+api.add_resource(UsersList, '/users')
+api.add_resource(Users, '/users/<int:user_id>')

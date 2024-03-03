@@ -1,4 +1,6 @@
 env
-flaskenv
+.flaskenv
 Dockerfile
 Dockerfile.prod
+.coverage
+htmlcov

@@ -1,5 +1,6 @@
 import json
-from src import db
+# from src import db
+
 from src.api.models import User
 
 
@@ -19,9 +20,6 @@ def test_add_user(test_app, test_database):
 
 
 
-
-
-
 def test_add_user_invalid_json(test_app, test_database):
     client = test_app.test_client()
     resp = client.post(
@@ -34,11 +32,6 @@ def test_add_user_invalid_json(test_app, test_database):
     assert 'Input payload validation failed' in data['message']
 
 
-
-
-
-
-
 def test_add_user_invalid_json_keys(test_app, test_database):
     client = test_app.test_client()
     resp = client.post(
@@ -49,9 +42,6 @@ def test_add_user_invalid_json_keys(test_app, test_database):
     data = json.loads(resp.data.decode())
     assert resp.status_code == 400
     assert 'Input payload validation failed' in data['message']
-
-
-
 
 
 
@@ -79,13 +69,8 @@ def test_add_user_duplicate_email(test_app, test_database):
 
 
 
-
-
-
-def test_single_user(test_app, test_database):
-    user = User(username='jeffrey', email='jeffrey@testdriven.io')
-    db.session.add(user)
-    db.session.commit()
+def test_single_user(test_app, test_database, add_user):
+    user = add_user('jeffrey', 'jeffrey@testdriven.io')
     client = test_app.test_client()
     resp = client.get(f'/users/{user.id}')
     data = json.loads(resp.data.decode())
@@ -94,11 +79,25 @@ def test_single_user(test_app, test_database):
     assert 'jeffrey@testdriven.io' in data['email']
 
 
-
-
 def test_single_user_incorrect_id(test_app, test_database):
     client = test_app.test_client()
     resp = client.get('/users/999')
     data = json.loads(resp.data.decode())
     assert resp.status_code == 404
     assert 'User 999 does not exist' in data['message']
+
+
+def test_all_users(test_app, test_database, add_user):
+    test_database.session.query(User).delete()  # new
+    add_user('michael', 'michael@mherman.org')
+    add_user('fletcher', 'fletcher@notreal.com')
+    client = test_app.test_client()
+    resp = client.get('/users')
+    data = json.loads(resp.data.decode())
+    assert resp.status_code == 200
+    assert len(data) == 2
+    assert 'michael' in data[0]['username']
+    assert 'michael@mherman.org' in data[0]['email']
+    assert 'fletcher' in data[1]['username']
+    assert 'fletcher@notreal.com' in data[1]['email']
+
