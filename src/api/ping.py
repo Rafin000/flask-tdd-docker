@@ -1,10 +1,11 @@
 from flask import Blueprint
-from flask_restx import Resource, Api
+from flask_restx import Resource, Api , Namespace
 
 
-ping_blueprint = Blueprint('ping', __name__)
-api = Api(ping_blueprint)
+# ping_blueprint = Blueprint('ping', __name__)
+# api = Api(ping_blueprint)
 
+ping_namespace = Namespace("ping")
 
 class Ping(Resource):
     def get(self):
@@ -14,4 +15,5 @@ class Ping(Resource):
         }
 
 
-api.add_resource(Ping, '/ping')
+# api.add_resource(Ping, '/ping')
+ping_namespace.add_resource(Ping, "")
